@@ -1,0 +1,120 @@
+/* Login.css */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #6e9bf5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .container {
+    background-color: #718adc65;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 200%;
+    max-width: 400px;
+    padding: 20px;
+    height: 50ex;
+  }
+  
+  .header .text {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  
+  .header .underline {
+    width: 50px;
+    height: 4px;
+    background-color: #007bff;
+    margin: 0 auto;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+  
+  .inputs .input {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 8px;
+    transition: border-color 0.3s ease;
+  }
+  
+  .inputs .input:hover {
+    border-color: #007bff;
+  }
+  
+  .inputs .input img {
+    width: 20px;
+    margin-right: 10px;
+    opacity: 0.8;
+  }
+  
+  .inputs .input input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 16px;
+  }
+  
+  .forgot-password {
+    font-size: 14px;
+    color: #666;
+    text-align: right;
+    margin-top: 10px;
+  }
+  
+  .forgot-password span {
+    color: #007bff;
+    cursor: pointer;
+  }
+  
+  .forgot-password span:hover {
+    text-decoration: underline;
+  }
+  
+  .submit-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .submit {
+    flex: 1;
+    text-align: center;
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-weight: 600;
+    margin: 0 5px;
+  }
+  
+  .submit:hover {
+    background-color: #0056b3;
+  }
+  
+  .submit.active {
+    background-color: #0056b3;
+    color: #ffffff;
+  }
+  
+  .submit:not(.active) {
+    background-color: #e0e0e0;
+    color: #676767;
+  }
+ 
