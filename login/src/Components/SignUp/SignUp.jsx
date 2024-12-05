@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AuthService } from '../../services/authService';
 import { useNavigate } from 'react-router-dom';
 import './SignUp.css';
 
@@ -15,34 +16,37 @@ const SignUp = () => {
 
   const navigate = useNavigate();
 
-  const handleSignUp = async (event) => {
-    event.preventDefault();
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: ''
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
     setError('');
 
-    try {
-      const response = await fetch('http://localhost:5000/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert('Sign Up Successful!');
-        navigate('/'); // Redirect to Login page after successful sign-up
-      } else {
-        setError(data.message || 'An error occurred during sign-up');
-      }
-    } catch (error) {
-      setError('Network error or server issue.');
-    } finally {
+    if (!username || !email || !password) {
+      setError('All fields are required');
       setLoading(false);
+      return;
     }
-  };
+
+      try {
+        const registrationData  = formData;
+        const response = await AuthService.register(registrationData);
+
+        // Clear form
+        setFormData({
+          username: '',
+          email: '',
+          password: ''
+        });
+      } catch (error) {
+        console.error("Registration Error:", error.response || error.message);
+      }    
+  };  
 
   return (
     <div className="container">
@@ -50,7 +54,7 @@ const SignUp = () => {
         <div className="text">Sign Up</div>
         <div className="underline"></div>
       </div>
-      <form onSubmit={handleSignUp} className="inputs">
+      <form onSubmit={handleSubmit} className="inputs">
         <div className="input">
           <img src={user_icon} alt="" />
           <input

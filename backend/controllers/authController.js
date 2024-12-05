@@ -3,33 +3,74 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const logAction = require('../utils/logAction');
 
-exports.signup = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashedPassword });
-    await user.save();
+const bcrypt = require('bcrypt');
 
-    await logAction(user._id, 'User signup');
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error during signup' });
+export class AuthController {
+  static PEPPER = process.env.PASSWORD_PEPPER;
+  static JWT_SECRET = process.env.JWT_SECRET;
+  static SALT_ROUNDS = 12;
+  static TRANSIT_KEY = process.env.TRANSIT_KEY;
+
+  static decryptTransitPassword(transitPassword) {
+    const bytes = CryptoJS.AES.decrypt(
+      transitPassword,
+      AuthController.TRANSIT_KEY
+    );
+    return bytes.toString(CryptoJS.enc.Utf8);
   }
-};
 
-exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      await logAction(null, `Failed login attempt for ${email}`);
-      return res.status(401).json({ message: 'Invalid credentials' });
+  static applyPepper(password) {
+    return crypto
+      .createHmac("sha256", AuthController.PEPPER)
+      .update(password)
+      .digest("hex");
+  }
+
+  static async register(req, res) {
+    try {
+      const { email, password: transitPassword, username } = req.body;
+
+      // Decrypt the transit-protected password
+      const password = AuthController.decryptTransitPassword(transitPassword);
+
+      // Check if user already exists
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+
+      // Generate a unique salt for this user
+      const salt = await bcrypt.genSalt(AuthController.SALT_ROUNDS);
+
+      // Combine password with pepper
+      const pepperedPassword = AuthController.applyPepper(password);
+
+      // Hash the peppered password with the salt
+      const hashedPassword = await bcrypt.hash(pepperedPassword, salt);
+
+      // Create new user
+      const user = await User.create({
+        username,
+        email,
+        password: hashedPassword,
+        salt
+      });
+
+      // Send verification email
+      await AuthController.sendVerificationEmail(user.email, verificationToken);
+
+      res.status(201).json({
+        message:
+          "Registration successful. Please check your email to verify your account.",
+        requiresVerification: true,
+        email: user.email,
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res
+        .status(500)
+        .json({ message: "Registration failed", error: error.message });
     }
-
-    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    await logAction(user._id, 'User login');
-    res.status(200).json({ token });
-  } catch (error) {
-    res.status(500).json({ message: 'Error during login' });
   }
-};
+
+}
