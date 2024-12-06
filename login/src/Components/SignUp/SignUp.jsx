@@ -8,45 +8,49 @@ import email_icon from '../Assets/email.png';
 import password_icon from '../Assets/password.png';
 
 const SignUp = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: ''
-  });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    if (!username || !email || !password) {
-      setError('All fields are required');
+    try {
+      const response = await AuthService.register(formData);
+      console.log('Registration successful:', response);
+
+      // Clear form data
+      setFormData({
+        username: '',
+        email: '',
+        password: '',
+      });
+
+      // Navigate to the login page or show success message
+      navigate('/login');
+    } catch (err) {
+      console.error('Registration Error:', err.message);
+      setError(err.message);
+    } finally {
       setLoading(false);
-      return;
     }
-
-      try {
-        const registrationData  = formData;
-        const response = await AuthService.register(registrationData);
-
-        // Clear form
-        setFormData({
-          username: '',
-          email: '',
-          password: ''
-        });
-      } catch (error) {
-        console.error("Registration Error:", error.response || error.message);
-      }    
-  };  
+  };
 
   return (
     <div className="container">
@@ -56,30 +60,33 @@ const SignUp = () => {
       </div>
       <form onSubmit={handleSubmit} className="inputs">
         <div className="input">
-          <img src={user_icon} alt="" />
+          <img src={user_icon} alt="Username Icon" />
           <input
             type="text"
+            name="username"
             placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={formData.username}
+            onChange={handleChange}
           />
         </div>
         <div className="input">
-          <img src={email_icon} alt="" />
+          <img src={email_icon} alt="Email Icon" />
           <input
             type="email"
+            name="email"
             placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={formData.email}
+            onChange={handleChange}
           />
         </div>
         <div className="input">
-          <img src={password_icon} alt="" />
+          <img src={password_icon} alt="Password Icon" />
           <input
             type="password"
+            name="password"
             placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={formData.password}
+            onChange={handleChange}
           />
         </div>
         {error && <div className="error-message">{error}</div>}
@@ -90,7 +97,7 @@ const SignUp = () => {
         </div>
       </form>
       <div className="login-link">
-        Already have an account? <a href="/">Login</a>
+        Already have an account? <a href="/login">Login</a>
       </div>
     </div>
   );
